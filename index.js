@@ -42,5 +42,5 @@ app.get("*", function (request, response) {
 })
 
 app.listen(PORT, () => {
-    console.log(`Back End server is running on port ${PORT}`);
+    // console.log(`Back End server is running on port ${PORT}`);
 });
