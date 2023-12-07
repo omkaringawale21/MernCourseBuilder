@@ -35,6 +35,12 @@ app.use("/public/photos", express.static(path.join(__dirname, "public/photos")))
 
 app.use("/public/videos", express.static(path.join(__dirname, "public/videos")));
 
+app.use(express.static(path.join(__dirname, "./client/build")));
+
+app.get("*", function (request, response) {
+    response.sendFile(path.join(__dirname, "./client/build/index.html"))
+})
+
 app.listen(PORT, () => {
     console.log(`Back End server is running on port ${PORT}`);
 });
