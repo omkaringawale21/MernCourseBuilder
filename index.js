@@ -7,7 +7,6 @@ const path = require("path");
 const Connection = require("./DataBase/Connection.js");
 const router = require("./Routes/Routes.js");
 const passport = require("passport");
-const session = require("express-session");
 
 dotenv.config();
 
@@ -46,10 +45,10 @@ app.use("/public/photos", express.static(path.join(__dirname, "public/photos")))
 
 app.use("/public/videos", express.static(path.join(__dirname, "public/videos")));
 
-app.use(express.static(path.join(__dirname, "./client")));
+app.use(express.static(path.join(__dirname, "./client/build")));
 
 app.get("*", function (request, response) {
-    response.sendFile(express.static(path.join(__dirname, "./client/build")));
+    response.sendFile(express.static(path.join(__dirname, "./client/build/index.html")));
 });
 
 app.listen(PORT, () => {
