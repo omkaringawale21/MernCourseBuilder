@@ -11,6 +11,7 @@ const bcrypt = require("bcrypt");
 const ImageMiddleware = require("../Middleware/ImageMiddleware.js");
 const TokenAuthenMiddleware = require("../Middleware/TokenAuthenMiddleware.js");
 const VideoMiddleware = require("../Middleware/VideoMiddleware.js");
+const passport = require("passport");
 
 const router = express.Router();
 
@@ -564,5 +565,23 @@ router.post("/api/new/contactus", async (request, response) => {
         response.status(404).json({ message: "Conatct Request Can Not Send!", status: 404 });
     }
 });
+
+// Google Authentication
+router.route('/google').get((request, response) => {
+    passport.authenticate('google', { scope: ['email', 'profile'] });
+})
+
+const isLogging = (request, response, next) => {
+    request.user ? next() : response.sendStatus(401);
+}
+
+// Successful Authentication Redirect
+router.get('/google/callback',
+    isLogging,
+    passport.authenticate('google', {
+        failureRedirect: '/login',
+        successRedirect: '/course',
+    })
+);
 
 module.exports = router;

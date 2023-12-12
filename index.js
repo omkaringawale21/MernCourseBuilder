@@ -6,6 +6,8 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 const Connection = require("./DataBase/Connection.js");
 const router = require("./Routes/Routes.js");
+const passport = require("passport");
+const session = require("express-session");
 
 dotenv.config();
 
@@ -25,9 +27,18 @@ Connection(userName, userPass, userDB);
 app.use(express.json());
 app.use(cookieParser("*"));
 app.use(cors("*", {
-    origin: ["https://coursebuilder-n3k9.onrender.com"],
+    origin: true,
     Credential: true,
 }));
+
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: true }
+}))
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(router);
 
@@ -35,12 +46,6 @@ app.use("/public/photos", express.static(path.join(__dirname, "public/photos")))
 
 app.use("/public/videos", express.static(path.join(__dirname, "public/videos")));
 
-app.use(express.static(path.join(__dirname, "./client/build")));
-
-app.get("*", function (request, response) {
-    response.sendFile(path.join(__dirname, "./client/build/index.html"))
-})
-
 app.listen(PORT, () => {
-    // console.log(`Back End server is running on port ${PORT}`);
+    console.log(`Back End server is running on port ${PORT}`);
 });
