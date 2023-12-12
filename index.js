@@ -31,14 +31,14 @@ app.use(cors("*", {
     Credential: true,
 }));
 
-app.use(session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: true }
-}))
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(session({
+//     secret: 'keyboard cat',
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: { secure: true }
+// }))
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 app.use(router);
 
@@ -47,5 +47,5 @@ app.use("/public/photos", express.static(path.join(__dirname, "public/photos")))
 app.use("/public/videos", express.static(path.join(__dirname, "public/videos")));
 
 app.listen(PORT, () => {
-    console.log(`Back End server is running on port ${PORT}`);
+    // console.log(`Back End server is running on port ${PORT}`);
 });
