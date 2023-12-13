@@ -30,8 +30,8 @@ Connection(userName, userPass, userDB);
 
 app.use(express.json());
 app.use(cookieParser("*"));
-app.use(cors("*", {
-    origin: ["https://coursebuilder-n3k9.onrender.com/"],
+app.use(cors({
+    origin: ["https://coursebuilder-n3k9.onrender.com"],
     Credential: true,
 }));
 
@@ -48,7 +48,7 @@ passport.use(
     new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_SECREAT,
-        callbackURL: "/google/callback",
+        callbackURL: "https://coursebuilder-n3k9.onrender.com/google/callback",
         scope: ["profile", "email"],
     },
         async (accessToken, refreshToken, profile, done) => {
@@ -91,14 +91,14 @@ passport.deserializeUser((user, done) => {
     done(null, user);
 });
 
-app.get("/google", passport.authenticate("google", { scope: ["profile", "'email"] }));
+app.get("https://coursebuilder-n3k9.onrender.com/google", passport.authenticate("google", { scope: ["profile", "'email"] }));
 
 app.get("/google/callback", passport.authenticate("google", {
-    successRedirect: "/course",
-    failureRedirect: "/login",
+    successRedirect: "https://coursebuilder-n3k9.onrender.com/course",
+    failureRedirect: "https://coursebuilder-n3k9.onrender.com/login",
 }));
 
-app.get("/google/logout", (request, response, next) => {
+app.get("https://coursebuilder-n3k9.onrender.com/google/logout", (request, response, next) => {
     request.logOut(
         function (err) {
             if (err) {
