@@ -91,11 +91,11 @@ passport.deserializeUser((user, done) => {
     done(null, user);
 });
 
-app.get("/google", passport.authenticate("google", { scope: ["profile", "'email"] }));
+app.get("https://coursebuilder-n3k9.onrender.com/google", passport.authenticate("google", { scope: ["profile", "'email"] }));
 
-app.get("/google/callback", passport.authenticate("google", {
-    successRedirect: "http://localhost:3000/course",
-    failureRedirect: "http://localhost:3000/login",
+app.get("https://coursebuilder-n3k9.onrender.com/google/callback", passport.authenticate("google", {
+    successRedirect: "https://coursebuilder-n3k9.onrender.com/course", 
+    failureRedirect: "https://coursebuilder-n3k9.onrender.com/login",
 }));
 
 app.get("/google/logout", (request, response, next) => {
@@ -104,7 +104,7 @@ app.get("/google/logout", (request, response, next) => {
             if (err) {
                 return next(err);
             }
-            response.redirect("http://localhost:3000/login");
+            response.redirect("https://coursebuilder-n3k9.onrender.com/login");
         }
     )
 });
