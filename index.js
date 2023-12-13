@@ -31,7 +31,7 @@ Connection(userName, userPass, userDB);
 app.use(express.json());
 app.use(cookieParser("*"));
 app.use(cors("*", {
-    origin: true,
+    origin: ["https://coursebuilder-n3k9.onrender.com/"],
     Credential: true,
 }));
 
