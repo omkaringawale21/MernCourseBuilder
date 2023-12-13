@@ -7,6 +7,11 @@ const path = require("path");
 const Connection = require("./DataBase/Connection.js");
 const router = require("./Routes/Routes.js");
 const passport = require("passport");
+const session = require("express-session");
+const userCollections = require("./Models/User.js");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const jwt = require("jsonwebtoken");
+const GoogleMiddleware = require("./Middleware/GoogleMiddleware.js");
 
 dotenv.config();
 
@@ -30,14 +35,79 @@ app.use(cors("*", {
     Credential: true,
 }));
 
-// app.use(session({
-//     secret: 'keyboard cat',
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: { secure: true }
-// }))
-// app.use(passport.initialize());
-// app.use(passport.session());
+app.use(session({
+    secret: "omkaringawaleomkaringawaleomkaringawaleomkaringawale3456",
+    resave: false,
+    saveUninitialized: true,
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(
+    new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_SECREAT,
+        callbackURL: "/google/callback",
+        scope: ["profile", "email"],
+    },
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                let userExits = await userCollections.findOne({ email: profile.emails[0].value });
+
+                if (!userExits) {
+                    let newuser = new userCollections({
+                        fname: profile.displayName,
+                        email: profile.emails[0].value,
+                        password: profile.emails[0].value,
+                        image: profile.photos[0].value
+                    });
+
+                    await newuser.save();
+
+                    const token = jwt.sign({ _id: newuser._id }, process.env.SECREAT_KEY_JWT);
+
+                    GoogleMiddleware(token);
+                } else {
+                    const token = jwt.sign({ _id: userExits._id }, process.env.SECREAT_KEY_JWT);
+
+                    GoogleMiddleware(token);
+                }
+
+                return done(null, profile);
+            } catch (error) {
+                return done(error, null);
+            }
+
+        }
+    )
+);
+
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
+
+app.get("/google", passport.authenticate("google", { scope: ["profile", "'email"] }));
+
+app.get("/google/callback", passport.authenticate("google", {
+    successRedirect: "http://localhost:3000/course",
+    failureRedirect: "http://localhost:3000/login",
+}));
+
+app.get("/google/logout", (request, response, next) => {
+    request.logOut(
+        function (err) {
+            if (err) {
+                return next(err);
+            }
+            response.redirect("http://localhost:3000/login");
+        }
+    )
+});
 
 app.use(router);
 

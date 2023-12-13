@@ -7,10 +7,12 @@ const Connection = async (userName, userPass, userDB) => {
             useNewUrlParser: true,
         });
 
-        // console.log("DataBase Connected Successfully...");
+        console.log("DataBase Connected Successfully...");
     } catch (error) {
         console.log("MongoDB Connection", error);
     }
 }
+
+// mongodb+srv://${userName}:${userPass}@cluster0.he6lxvj.mongodb.net/${userDB}?retryWrites=true&w=majority
 
 module.exports = Connection;

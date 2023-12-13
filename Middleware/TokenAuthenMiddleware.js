@@ -26,7 +26,7 @@ const TokenAuthenMiddleware = async (request, response, next) => {
 
         next();
     } catch (error) {
-        response.status(404).json({ error: "User not Found! Please Login! Invalid user", status: 404, thisAdmin: false });
+        response.status(422).json({ error: "User not Found! Please Login", status: 422, thisAdmin: false, profile: false });
     }
 }
 

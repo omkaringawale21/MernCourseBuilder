@@ -27,7 +27,6 @@ const UserSchema = new mongoose.Schema({
     },
     mobNum: {
         type: Number,
-        required: true,
         trim: true,
         unique: true,
     },
