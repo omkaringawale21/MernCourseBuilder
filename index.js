@@ -98,7 +98,7 @@ app.get("/google/callback", passport.authenticate("google", {
     failureRedirect: "/login",
 }));
 
-app.get("https://coursebuilder-n3k9.onrender.com/google/logout", (request, response, next) => {
+app.get("/google/logout", (request, response, next) => {
     request.logOut(
         function (err) {
             if (err) {
