@@ -94,8 +94,8 @@ passport.deserializeUser((user, done) => {
 app.get("/google", passport.authenticate("google", { scope: ["profile", "'email"] }));
 
 app.get("/google/callback", passport.authenticate("google", {
-    successRedirect: "https://localhost:3000/course",
-    failureRedirect: "https://localhost:3000/login",
+    successRedirect: "/course",
+    failureRedirect: "/login",
 }));
 
 app.get("https://coursebuilder-n3k9.onrender.com/google/logout", (request, response, next) => {
@@ -104,7 +104,7 @@ app.get("https://coursebuilder-n3k9.onrender.com/google/logout", (request, respo
             if (err) {
                 return next(err);
             }
-            response.redirect("https://localhost:3000/login");
+            response.redirect("/login");
         }
     )
 });
