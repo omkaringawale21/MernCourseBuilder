@@ -4,11 +4,6 @@ const jwt = require("jsonwebtoken");
 
 const GoogleMiddleware = async (token, next) => {
     try {
-        response.cookie("udemycookie", token, {
-            expires: new Date(Date.now() + 86400000),
-            httpOnly: true,
-        });
-
         const tokenVerify = jwt.verify(token, process.env.SECREAT_KEY_JWT);
 
         const rootUser = await userCollections.findOne({ _id: tokenVerify._id });
