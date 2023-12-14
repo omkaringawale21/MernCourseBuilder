@@ -570,7 +570,6 @@ router.post("/api/new/contactus", async (request, response) => {
 // Send Email to user when loged in website
 router.route("/send/login/email").post((request, response) => {
     const { email } = request.body;
-    console.log(email);
 
     try {
         const transport = nodemailer.createTransport({
@@ -605,7 +604,6 @@ router.route("/send/login/email").post((request, response) => {
 
 router.route("/send/register/email").post((request, response) => {
     const { email } = request.body;
-    console.log(email);
 
     try {
         const transport = nodemailer.createTransport({
