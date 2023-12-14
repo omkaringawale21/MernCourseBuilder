@@ -118,7 +118,7 @@ app.use("/public/videos", express.static(path.join(__dirname, "public/videos")))
 app.use(express.static(path.join(__dirname, "./client/build")));
 
 app.get("*", function (request, response) {
-    response.sendFile(express.static(path.join(__dirname, "./client/build/index.html")));
+    response.sendFile(path.join(__dirname, "./client/build/index.html"));
 });
 
 app.listen(PORT, () => {
