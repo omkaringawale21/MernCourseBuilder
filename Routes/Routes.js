@@ -12,6 +12,7 @@ const ImageMiddleware = require("../Middleware/ImageMiddleware.js");
 const TokenAuthenMiddleware = require("../Middleware/TokenAuthenMiddleware.js");
 const VideoMiddleware = require("../Middleware/VideoMiddleware.js");
 const GoogleMiddleware = require("../Middleware/GoogleMiddleware.js");
+const nodemailer = require("nodemailer");
 
 const router = express.Router();
 
@@ -91,11 +92,11 @@ router.post("/logindetails", async (request, response) => {
 });
 
 // Get Profil Details Of Users
-router.get("/profile/userdetails", TokenAuthenMiddleware || GoogleMiddleware, async (request, response) => {
+router.get("/profile/userdetails", TokenAuthenMiddleware, async (request, response) => {
     try {
         const user = await userCollections.findOne({ _id: request.userId });
 
-        response.status(201).json({user: user, message: "Data get", status: 201, profile: true});
+        response.status(201).json({ user: user, message: "Data get", status: 201, profile: true });
     } catch (error) {
         response.status(404).json({ message: "can not get details!", status: 404, profile: false });
     }
@@ -563,6 +564,77 @@ router.post("/api/new/contactus", async (request, response) => {
         }
     } catch (error) {
         response.status(404).json({ message: "Conatct Request Can Not Send!", status: 404 });
+    }
+});
+
+// Send Email to user when loged in website
+router.route("/send/login/email").post((request, response) => {
+    const { email } = request.body;
+    console.log(email);
+
+    try {
+        const transport = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.GMAIL_ID,
+                pass: process.env.GMAIL_PASS,
+            }
+        });
+
+        const mailOption = {
+            from: process.env.GMAIL_ID,
+            to: email,
+            subject: "From Course Builer",
+            html: `
+            <h1>User Login Successfully.</h1>
+            <h1>Welcome to Course Builer</h1>
+            `,
+        }
+
+        transport.sendMail(mailOption, (error, info) => {
+            if (error) {
+                response.status(404).json({message: "Can not send mail!", status: 404});
+            } else {
+                response.status(201).json({message: "Mail send successfully.", status: 201});
+            }
+        })
+    } catch (error) {
+        response.status(404).json({message: "Can not send mail!", status: 404});
+    }
+});
+
+router.route("/send/register/email").post((request, response) => {
+    const { email } = request.body;
+    console.log(email);
+
+    try {
+        const transport = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.GMAIL_ID,
+                pass: process.env.GMAIL_PASS,
+            }
+        });
+
+        const mailOption = {
+            from: process.env.GMAIL_ID,
+            to: email,
+            subject: "From Course Builer",
+            html: `
+            <h1>User Registered Successfully.</h1>
+            <h1>Welcome to Course Builer</h1>
+            `,
+        }
+
+        transport.sendMail(mailOption, (error, info) => {
+            if (error) {
+                response.status(404).json({message: "Can not send mail!", status: 404});
+            } else {
+                response.status(201).json({message: "Mail send successfully.", status: 201});
+            }
+        })
+    } catch (error) {
+        response.status(404).json({message: "Can not send mail!", status: 404});
     }
 });
 
