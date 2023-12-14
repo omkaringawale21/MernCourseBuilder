@@ -166,7 +166,7 @@ router.get("/logout", TokenAuthenMiddleware, async (request, response) => {
 });
 
 // Create New Course
-router.post("/admin/dashboard/create_course", ImageMiddleware.single("courseImg"), async (request, response) => {
+router.post("/admin/dashboard/create_course", TokenAuthenMiddleware, ImageMiddleware.single("courseImg"), async (request, response) => {
     const { courseTitle, courseDescription, courseCreater, courseCategory, coursePrice, courseDiscount } = request.body;
     const image = request.file ? request.file.filename : null;
 
@@ -229,7 +229,7 @@ router.get("/admin/dashboard/delete_course/:id", TokenAuthenMiddleware, async (r
 });
 
 // Add Videos In Your That Specific Course
-router.post("/admin/dashboard/add_video/:id", VideoMiddleware.single("videolist"), async (request, response) => {
+router.post("/admin/dashboard/add_video/:id", TokenAuthenMiddleware, VideoMiddleware.single("videolist"), async (request, response) => {
     try {
         const id = request.params.id;
         const { videoTitle } = request.body;

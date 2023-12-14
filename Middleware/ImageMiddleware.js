@@ -26,10 +26,10 @@ const filterPhotos = (req, file, cd) => {
     if (allowedFileTypes.includes(file.mimetype)) {
         cd(null, true);
     } else {
-        cd(null, false);
+        cd(true, null);
     }
 }
 
-const ImageMiddleware = multer({ storage, filterPhotos });
+const ImageMiddleware = multer({ storage: storage, fileFilter: filterPhotos });
 
 module.exports = ImageMiddleware;

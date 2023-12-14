@@ -26,10 +26,10 @@ const filterVideos = (req, file, cd) => {
     if (allowedFileTypes.includes(file.mimetype)) {
         cd(null, true);
     } else {
-        cd(null, false);
-    } c
+        cd(true, null);
+    } 
 }
 
-const VideoMiddleware = multer({ storage, filterVideos });
+const VideoMiddleware = multer({ storage: storage, fileFilter: filterVideos });
 
 module.exports = VideoMiddleware;
