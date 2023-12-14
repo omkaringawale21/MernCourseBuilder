@@ -30,8 +30,8 @@ Connection(userName, userPass, userDB);
 
 app.use(express.json());
 app.use(cookieParser("*"));
-app.use(cors("*", {
-    origin: true,
+app.use(cors({
+    origin: "https://coursebuilder-f3po.onrender.com/",
     Credential: true,
 }));
 
