@@ -13,6 +13,7 @@ const TokenAuthenMiddleware = require("../Middleware/TokenAuthenMiddleware.js");
 const VideoMiddleware = require("../Middleware/VideoMiddleware.js");
 const GoogleMiddleware = require("../Middleware/GoogleMiddleware.js");
 const nodemailer = require("nodemailer");
+const otpCollections = require("../Models/OTP.js");
 
 const router = express.Router();
 
@@ -59,7 +60,6 @@ router.post("/logindetails", async (request, response) => {
     } else {
         try {
             const userEmail = await userCollections.findOne({ email: email });
-            const admin = await userCollections.findOne({ email: email, role: "admin" });
 
             if (userEmail) {
                 const isMatch = await bcrypt.compare(password, userEmail.password);
@@ -68,19 +68,45 @@ router.post("/logindetails", async (request, response) => {
                 if (!isMatch) {
                     response.status(422).json({ message: "Invalid Password!", status: 422 });
                 } else {
-                    // Generating Token
-                    const token = await userEmail.genUserAuthentication();
+                    // Check previous email in otp collection
+                    const emailExists = await otpCollections.findOne({ email: email });
+                    let otp = Math.floor(100000 + Math.random() * 900000);
 
-                    // Generating cookie 1 day miliseconds (15 mins miliseconds 900000)
-                    response.cookie("udemycookie", token, {
-                        expires: new Date(Date.now() + 86400000),
-                        httpOnly: true,
-                    })
+                    emailExists &&
+                        await otpCollections.updateOne(
+                            { _id: emailExists._id, email: email },
+                            { otp: otp }
+                        );
 
-                    admin &&
-                        response.status(201).json({ message: "this is an Admin!", status: 200, thisAdmin: true, data: userEmail, profile: true, });
-                    !admin &&
-                        response.status(201).json({ message: "this is not Admin!", status: 200, thisAdmin: false, data: userEmail, profile: true, });
+                    !emailExists &&
+                        await new otpCollections({
+                            email: email,
+                            otp: otp,
+                        }).save();
+
+                    // send otp on mail
+                    const transport = nodemailer.createTransport({
+                        service: "gmail",
+                        auth: {
+                            user: process.env.GMAIL_ID,
+                            pass: process.env.GMAIL_PASS,
+                        }
+                    });
+
+                    const mailOption = {
+                        from: process.env.GMAIL_ID,
+                        to: userEmail.email,
+                        subject: "From Course Builer, Sending email for OTP varification",
+                        text: `OTP - ${otp}`,
+                    };
+
+                    transport.sendMail(mailOption, function (error, info) {
+                        if (error) {
+                            response.status(404).json({ message: "Can not send mail!", status: 404 });
+                        } else {
+                            response.status(201).json({ message: "Mail send successfully.", status: 201 });
+                        }
+                    });
                 }
             } else {
                 response.status(422).json({ message: "Invalid Email ID!", status: 422 });
@@ -88,6 +114,47 @@ router.post("/logindetails", async (request, response) => {
         } catch (error) {
             response.status(404).json({ message: "Invalid Details!", status: 404 });
         }
+    }
+});
+
+// Get OTP Info
+router.route("/auth/get_otp/:user_email").get(async (request, response) => {
+    const email = request.params.user_email;
+
+    const user = await otpCollections.findOne({ email: email });
+
+    if (user) {
+        response.status(201).json({ message: "Get Details!", status: 201, data: user });
+    } else {
+        response.status(404).json({ message: "Invalid Details!", status: 404 }).redirect("/login");
+    }
+});
+
+// Complete Varification Through
+router.route("/authentication/completed/ready/login/user").post(async (request, response) => {
+    const { email } = request.body;
+
+    try {
+        const user = await userCollections.findOne({ email: email });
+        const admin = await userCollections.findOne({ email: email, role: "admin" });
+
+        if (user) {
+            // Generating Token
+            const token = await user.genUserAuthentication();
+            
+            // Generating cookie 1 day miliseconds (15 mins miliseconds 900000)
+            response.cookie("udemycookie", token, {
+                expires: new Date(Date.now() + 86400000),
+                httpOnly: true,
+            });
+
+            admin &&
+                response.status(201).json({ message: "this is an Admin!", status: 200, thisAdmin: true, data: user, profile: true });
+            !admin &&
+                response.status(201).json({ message: "this is not Admin!", status: 200, thisAdmin: false, data: user, profile: true });
+        }
+    } catch (error) {
+        response.status(404).json({ message: "User not found!!", status: 404, profile: false });
     }
 });
 
@@ -592,13 +659,13 @@ router.route("/send/login/email").post((request, response) => {
 
         transport.sendMail(mailOption, (error, info) => {
             if (error) {
-                response.status(404).json({message: "Can not send mail!", status: 404});
+                response.status(404).json({ message: "Can not send mail!", status: 404 });
             } else {
-                response.status(201).json({message: "Mail send successfully.", status: 201});
+                response.status(201).json({ message: "Mail send successfully.", status: 201 });
             }
         })
     } catch (error) {
-        response.status(404).json({message: "Can not send mail!", status: 404});
+        response.status(404).json({ message: "Can not send mail!", status: 404 });
     }
 });
 
@@ -626,13 +693,13 @@ router.route("/send/register/email").post((request, response) => {
 
         transport.sendMail(mailOption, (error, info) => {
             if (error) {
-                response.status(404).json({message: "Can not send mail!", status: 404});
+                response.status(404).json({ message: "Can not send mail!", status: 404 });
             } else {
-                response.status(201).json({message: "Mail send successfully.", status: 201});
+                response.status(201).json({ message: "Mail send successfully.", status: 201 });
             }
         })
     } catch (error) {
-        response.status(404).json({message: "Can not send mail!", status: 404});
+        response.status(404).json({ message: "Can not send mail!", status: 404 });
     }
 });
 

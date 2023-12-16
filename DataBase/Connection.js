@@ -13,6 +13,4 @@ const Connection = async (userName, userPass, userDB) => {
     }
 }
 
-// mongodb+srv://${userName}:${userPass}@cluster0.he6lxvj.mongodb.net/${userDB}?retryWrites=true&w=majority
-
 module.exports = Connection;

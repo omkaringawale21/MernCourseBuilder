@@ -10,8 +10,6 @@ const GoogleMiddleware = async (token, next) => {
 
         request.userId = rootUser._id;
 
-        console.log("rootUser", request.userId);
-
         next();
     } catch (error) {
 
