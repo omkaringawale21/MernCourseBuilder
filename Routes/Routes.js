@@ -126,7 +126,7 @@ router.route("/auth/get_otp/:user_email").get(async (request, response) => {
     if (user) {
         response.status(201).json({ message: "Get Details!", status: 201, data: user });
     } else {
-        response.status(404).json({ message: "Invalid Details!", status: 404 }).redirect("/login");
+        response.status(404).json({ message: "Invalid Details!", status: 404 });
     }
 });
 
@@ -141,7 +141,7 @@ router.route("/authentication/completed/ready/login/user").post(async (request, 
         if (user) {
             // Generating Token
             const token = await user.genUserAuthentication();
-            
+
             // Generating cookie 1 day miliseconds (15 mins miliseconds 900000)
             response.cookie("udemycookie", token, {
                 expires: new Date(Date.now() + 86400000),
@@ -155,6 +155,51 @@ router.route("/authentication/completed/ready/login/user").post(async (request, 
         }
     } catch (error) {
         response.status(404).json({ message: "User not found!!", status: 404, profile: false });
+    }
+});
+
+// Resend OTP send Again
+router.route("/authentication/for/resend/otp").post(async (request, response) => {
+    try {
+        const email = request.body.email;
+        const user = await otpCollections.findOne({ email: email });
+
+        let otp = Math.floor(100000 + Math.random() * 900000);
+
+        if (user) {
+            await otpCollections.updateOne(
+                { _id: user._id, email: email },
+                { otp: otp }
+            );
+
+            // Resend otp on mail
+            const transport = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                    user: process.env.GMAIL_ID,
+                    pass: process.env.GMAIL_PASS,
+                }
+            });
+
+            const mailOption = {
+                from: process.env.GMAIL_ID,
+                to: user.email,
+                subject: "From Course Builer, Sending email for OTP varification",
+                text: `OTP - ${otp}`,
+            };
+
+            transport.sendMail(mailOption, function (error, info) {
+                if (error) {
+                    response.status(404).json({ message: "Can not send mail!", status: 404 });
+                } else {
+                    response.status(201).json({ message: "Mail send successfully.", status: 201 });
+                }
+            });
+        } else {
+            response.status(404).json({ message: "Not send OTP!", status: 404, profile: false, thisAdmin: false });
+        }
+    } catch (error) {
+        response.status(404).json({ message: "User not found!", status: 404, profile: false, thisAdmin: false });
     }
 });
 
@@ -504,6 +549,9 @@ router.route("/payment/bs1/integrate/checkout").post(TokenAuthenMiddleware, asyn
         const user = await userCollections.findOne({ _id: userId });
 
         const exists = await paymentCollection.findOne({ userId: userId, courseid: courseid });
+
+        const product = await adminCollection.findOne({ courseid: courseid });
+
         if (exists) {
             response.status(404).json({ message: "The Course already Subscribed!", status: 404 });
         } else {
@@ -517,6 +565,41 @@ router.route("/payment/bs1/integrate/checkout").post(TokenAuthenMiddleware, asyn
                 amount: amount * 100,
                 currency: "INR",
             });
+
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                    user: process.env.GMAIL_ID,
+                    pass: process.env.GMAIL_PASS,
+                }
+            });
+
+            const options = {
+                from: process.env.GMAIL_ID,
+                to: user.email,
+                subject: "From Course Builer",
+                html: `
+                    <div style={{ display: "flex", justifyContent: "center", flexDirection: "column" }} >
+                        <h1 style={{ fontSize: "24px", fontFamily: "cursive" }} >Product Buy Successfully.</h1>
+                        <div>
+                            <div style={{ display: "flex", justifyContent: "center", flexDirection: "column" >
+                                <p style={{ fontSize: "16px", fontFamily: "cursive" }} >Title: ${product?.courseTitle}</p>
+                                <p style={{ fontSize: "16px", fontFamily: "cursive" }} >Description: ${product?.courseDescription}</p>
+                                <p style={{ fontSize: "16px", fontFamily: "cursive" }} >Category: ${product?.courseCategory}</p>
+                                <p style={{ fontSize: "16px", fontFamily: "cursive" }} >Price: ${product?.coursePrice - (product?.coursePrice / product?.courseDiscount === 0 ? 1 : product?.courseDiscount)}</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+            }
+
+            transporter.sendMail(options, (error, info) => {
+                if (error) {
+                    response.status(404).json({ message: "Can not send mail!", status: 404 });
+                } else {
+                    response.status(201).json({ message: "Mail send successfully.", status: 201 });
+                }
+            })
 
             response.status(201).json({ message: "Successful", status: 201, data: order, user: user });
         }
@@ -652,8 +735,8 @@ router.route("/send/login/email").post((request, response) => {
             to: email,
             subject: "From Course Builer",
             html: `
-            <h1>User Login Successfully.</h1>
-            <h1>Welcome to Course Builer</h1>
+                <h1>User Login Successfully.</h1>
+                <h1>Welcome to Course Builer</h1>
             `,
         }
 
